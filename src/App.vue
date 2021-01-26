@@ -2,16 +2,8 @@
   <Scene />
 </template>
 
-<script lang="ts">
-import { defineComponent } from "vue";
+<script setup lang="ts">
 import Scene from "./components/Scene.vue";
-
-export default defineComponent({
-  name: "App",
-  components: {
-    Scene,
-  },
-});
 </script>
 
 <style>

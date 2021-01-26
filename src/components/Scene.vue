@@ -1,9 +1,9 @@
 <template>
-  <canvas class="canvas" ref="canvasRef"></canvas>
+  <div class="canvas-root" ref="rootRef"></div>
 </template>
 
-<script lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
+<script setup lang="ts">
+import { onMounted, ref } from "vue";
 import {
   Clock,
   Color,
@@ -75,130 +75,108 @@ const camera = new PerspectiveCamera(100, sizes.width / sizes.height, 0.1, 100);
 camera.position.set(1, 1, 1);
 scene.add(camera);
 
-export default defineComponent({
-  name: "Scene",
-  setup() {
-    const canvasRef = ref();
+// Renderer
+const renderer = new WebGLRenderer();
+renderer.setSize(sizes.width, sizes.height);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    // Mount the scene
-    onMounted(() => {
-      const canvas = canvasRef.value;
+// screen resize
+useResize(sizes, camera, renderer);
 
-      // Renderer
-      const renderer = new WebGLRenderer({ canvas });
-      renderer.setSize(sizes.width, sizes.height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+// Debug UI
+const gui = useGUI(400);
+gui.addColor(debugObject, "depthColor").onChange(() => {
+  waterMaterial.uniforms.uDepthColor.value.set(debugObject.depthColor);
+});
+gui.addColor(debugObject, "surfaceColor").onChange(() => {
+  waterMaterial.uniforms.uSurfaceColor.value.set(debugObject.surfaceColor);
+});
+gui
+  .add(waterMaterial.uniforms.uBigWavesElevation, "value")
+  .min(0)
+  .max(1)
+  .step(0.001)
+  .name("uBigWavesElevation");
+gui
+  .add(waterMaterial.uniforms.uBigWavesFrequency.value, "x")
+  .min(0)
+  .max(10)
+  .step(0.001)
+  .name("uBigWavesFrequencyX");
+gui
+  .add(waterMaterial.uniforms.uBigWavesFrequency.value, "y")
+  .min(0)
+  .max(10)
+  .step(0.001)
+  .name("uBigWavesFrequencyY");
+gui
+  .add(waterMaterial.uniforms.uBigWavesSpeed, "value")
+  .min(0)
+  .max(4)
+  .step(0.001)
+  .name("uBigWavesSpeed");
+gui
+  .add(waterMaterial.uniforms.uSmallWavesElevation, "value")
+  .min(0)
+  .max(1)
+  .step(0.001)
+  .name("uSmallWavesElevation");
+gui
+  .add(waterMaterial.uniforms.uSmallWavesFrequency, "value")
+  .min(0)
+  .max(30)
+  .step(0.001)
+  .name("uSmallWavesFrequency");
+gui
+  .add(waterMaterial.uniforms.uSmallWavesSpeed, "value")
+  .min(0)
+  .max(4)
+  .step(0.001)
+  .name("uSmallWavesSpeed");
+gui
+  .add(waterMaterial.uniforms.uSmallIterations, "value")
+  .min(0)
+  .max(5)
+  .step(1)
+  .name("uSmallIterations");
+gui
+  .add(waterMaterial.uniforms.uColorOffset, "value")
+  .min(0)
+  .max(1)
+  .step(0.001)
+  .name("uColorOffset");
+gui
+  .add(waterMaterial.uniforms.uColorMultiplier, "value")
+  .min(0)
+  .max(10)
+  .step(0.001)
+  .name("uColorMultiplier");
 
-      // Controls
-      const controls = new OrbitControls(camera, canvas);
-      controls.enableDamping = true;
+// Mount the scene
+const rootRef = ref();
+onMounted(() => {
+  const root = rootRef.value;
 
-      // screen resize
-      useResize(sizes, camera, renderer);
+  root.appendChild(renderer.domElement);
 
-      // Animation loop
-      const clock = new Clock();
-      (function tick() {
-        const elapsedTime = clock.getElapsedTime();
+  // Controls
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
 
-        // Water
-        waterMaterial.uniforms.uTime.value = elapsedTime;
-
-        // Update controls
-
-        controls.update();
-
-        // Render
-        renderer.render(scene, camera);
-
-        // Call tick again on the next frame
-        window.requestAnimationFrame(tick);
-      })();
-
-      // Debug UI
-      const gui = useGUI(350);
-      gui.addColor(debugObject, "depthColor").onChange(() => {
-        waterMaterial.uniforms.uDepthColor.value.set(debugObject.depthColor);
-      });
-      gui.addColor(debugObject, "surfaceColor").onChange(() => {
-        waterMaterial.uniforms.uSurfaceColor.value.set(
-          debugObject.surfaceColor
-        );
-      });
-      gui
-        .add(waterMaterial.uniforms.uBigWavesElevation, "value")
-        .min(0)
-        .max(1)
-        .step(0.001)
-        .name("uBigWavesElevation");
-      gui
-        .add(waterMaterial.uniforms.uBigWavesFrequency.value, "x")
-        .min(0)
-        .max(10)
-        .step(0.001)
-        .name("uBigWavesFrequencyX");
-      gui
-        .add(waterMaterial.uniforms.uBigWavesFrequency.value, "y")
-        .min(0)
-        .max(10)
-        .step(0.001)
-        .name("uBigWavesFrequencyY");
-      gui
-        .add(waterMaterial.uniforms.uBigWavesSpeed, "value")
-        .min(0)
-        .max(4)
-        .step(0.001)
-        .name("uBigWavesSpeed");
-      gui
-        .add(waterMaterial.uniforms.uSmallWavesElevation, "value")
-        .min(0)
-        .max(1)
-        .step(0.001)
-        .name("uSmallWavesElevation");
-      gui
-        .add(waterMaterial.uniforms.uSmallWavesFrequency, "value")
-        .min(0)
-        .max(30)
-        .step(0.001)
-        .name("uSmallWavesFrequency");
-      gui
-        .add(waterMaterial.uniforms.uSmallWavesSpeed, "value")
-        .min(0)
-        .max(4)
-        .step(0.001)
-        .name("uSmallWavesSpeed");
-      gui
-        .add(waterMaterial.uniforms.uSmallIterations, "value")
-        .min(0)
-        .max(5)
-        .step(1)
-        .name("uSmallIterations");
-      gui
-        .add(waterMaterial.uniforms.uColorOffset, "value")
-        .min(0)
-        .max(1)
-        .step(0.001)
-        .name("uColorOffset");
-      gui
-        .add(waterMaterial.uniforms.uColorMultiplier, "value")
-        .min(0)
-        .max(10)
-        .step(0.001)
-        .name("uColorMultiplier");
-    });
-
-    return {
-      canvasRef,
-    };
-  },
+  // Animation loop
+  const clock = new Clock();
+  (function tick() {
+    const elapsedTime = clock.getElapsedTime();
+    // Water
+    waterMaterial.uniforms.uTime.value = elapsedTime;
+    // Update controls
+    controls.update();
+    // Render
+    renderer.render(scene, camera);
+    // Call tick again on the next frame
+    window.requestAnimationFrame(tick);
+  })();
 });
 </script>
 
-<style scoped>
-.canvas {
-  position: fixed;
-  top: 0;
-  left: 0;
-  outline: none;
-}
-</style>
+<style scoped></style>
