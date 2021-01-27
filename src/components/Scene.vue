@@ -15,8 +15,8 @@ import {
   Vector2,
   WebGLRenderer,
 } from "three";
-import waterVertexShader from "../shaders/water/vertex";
-import waterFragmentShader from "../shaders/water/fragment";
+import waterVertexShader from "../shaders/water/vertex.glsl";
+import waterFragmentShader from "../shaders/water/fragment.glsl";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import useGUI from "../composables/useGUI";
 import useResize from "../composables/useResize";
