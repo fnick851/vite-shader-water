@@ -98,9 +98,12 @@ void main()
     vec4 modelPosition = modelMatrix * vec4(position, 1.0);
 
     // Elevation
-    float elevation = sin(modelPosition.x * uBigWavesFrequency.x + uTime * uBigWavesSpeed) *
-                      sin(modelPosition.z * uBigWavesFrequency.y + uTime * uBigWavesSpeed) *
-                      uBigWavesElevation;
+    float elevation =
+    sin(modelPosition.x * uBigWavesFrequency.x + uTime * uBigWavesSpeed)
+    * 
+    sin(modelPosition.z * uBigWavesFrequency.y + uTime * uBigWavesSpeed) 
+    * 
+    uBigWavesElevation;
 
     for(float i = 1.0; i <= uSmallIterations; i++)
     {
